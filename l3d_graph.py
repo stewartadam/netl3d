@@ -42,8 +42,8 @@ class graph:
         for row in range(8):
           for rgb_value in frame[row][col]:
             data.append(rgb_value)
-      controller.send_colors(i, data)
-    controller.send_refresh()
+      self.controller.send_colors(i, data)
+    self.controller.send_refresh()
 
   def push_to_cube_bulk(self):
     self.debug()
@@ -57,17 +57,19 @@ class graph:
           led_count += 1
           for rgb_value in frame[row][col]:
           	data.append(rgb_value)
-          if led_count % controller.LED_PER_PACKET == 0:
-            controller.send_colors(led_count - controller.LED_PER_PACKET, data)
+          if led_count % self.controller.LED_PER_PACKET == 0:
+            self.controller.send_colors(led_count - self.controller.LED_PER_PACKET, data)
             data = bytearray()
-    controller.send_refresh()
+    self.controller.send_refresh()
 
   def debug(self):
+    if not self.controller.debug:
+      return;
     frame_id = 0
     for frame in self.led_state:
-      print "FRAME %d" % frame_id
+      print("FRAME %d" % frame_id)
       for row in frame:
-        print row
+        print(row)
       print
       frame_id += 1
 
@@ -89,13 +91,13 @@ if __name__ == '__main__':
     for i in range(8):
       row = []
       for j in range(len(values)):
-      	controller.set_color_mask(j)
+        controller.set_color_mask(j)
         row.append(controller.get_color(1, 1, 1) if values[j] >= i else [0, 0, 0])
       frame.append(row)
-    # print 'static_value = %d ' % static_value
-    # print 'frame_generated:'
+    # print('static_value = %d ' % static_value)
+    # print('frame_generated:')
     # for row in frame:
-    #   print row
+    #   print(row)
     return frame
 
   def generate_frame_increment():
@@ -112,10 +114,10 @@ if __name__ == '__main__':
       for value in values:
         row.append([128, 128, 128] if value == i else [0, 0, 0])
       frame.append(row)
-    # print 'static_value = %d ' % static_value
-    # print 'frame_generated:'
+    # print('static_value = %d ' % static_value)
+    # print('frame_generated:')
     # for row in frame:
-    #   print row
+    #   print(row)
     return frame
 
   sheet_counter = 0
@@ -128,10 +130,10 @@ if __name__ == '__main__':
       for j in range(8):
         row.append([128, 128, 128] if sheet_counter == 0 else [0, 0, 0])
       frame.append(row)
-    # print 'static_value = %d ' % static_value
-    # print 'frame_generated:'
+    # print('static_value = %d ' % static_value)
+    # print('frame_generated:')
     # for row in frame:
-    #   print row
+    #   print(row)
 
     sheet_counter = (sheet_counter + 1) % 8
     return frame
@@ -139,6 +141,6 @@ if __name__ == '__main__':
   while 1:
     #frame = generate_frame_sheet()
     #frame = generate_frame_increment()
-    #frame = generate_frame_random()
+    frame = generate_frame_random()
     g.slide(frame)
     time.sleep(0.1)
