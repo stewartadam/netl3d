@@ -5,6 +5,7 @@ import socket
 class netl3d:
   LED_NUM = 512
   LED_PER_PACKET = 256
+  MAX_SEQUENCE_NUM = 256
 
   brightness = 128
   color_mask = 7
@@ -15,25 +16,35 @@ class netl3d:
     self.device_ip = device_ip
     self.port = port
     self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    self.sequence_number = 0
 
-  def send_colors(self, start_led, data):
-    header = bytearray()
-    header.append(start_led >> 8)
-    header.append(start_led % 256)
-    self.send_packet(header+data)
+  def handshake(self):
+    data = bytearray()
+    data.append(self.sequence_number)
+    self.send_packet(0, data)
+
+  def send_colors(self, start_led, pixel_data):
+    data = bytearray()
+    data.append(start_led >> 8)
+    data.append(start_led % 256)
+    data += pixel_data
+    self.send_packet(1, data)
 
   def send_refresh(self):
-    header = bytearray()
-    header.append(2)
-    self.send_packet(header)
+    self.send_packet(2)
 
-  def send_packet(self, payload):
+  def send_packet(self, control_value, data=None):
+    headers = bytearray()
+    headers.append(control_value)
+    headers.append(self.sequence_number)
+    payload = headers + data if data else headers
     if self.debug or self.debug_net:
-      print "Payload length:", len(payload)
-      print "Message:", binascii.hexlify(payload)
+      print("Payload length:", len(payload))
+      print("Message:", binascii.hexlify(payload))
     self.socket.sendto(payload, (self.device_ip, self.port))
+    self.sequence_number = (self.sequence_number + 1) % netl3d.MAX_SEQUENCE_NUM
 
-  def get_brightness(self, ):
+  def get_brightness(self):
     return self.brightness
 
   def set_brightness(self, brightness):
