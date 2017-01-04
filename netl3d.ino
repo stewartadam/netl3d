@@ -32,6 +32,8 @@ void colorWipe(uint32_t c) {
 void setup() {
   pinMode(PIXEL_PIN, OUTPUT);
 
+  WiFi.selectAntenna(ANT_AUTO);
+
   Udp.setBuffer(1500);
   Udp.begin(UDP_PORT);
 
@@ -39,6 +41,7 @@ void setup() {
   delay(1000); //to give the serial port time to open
 
   IPAddress ip = WiFi.localIP();
+  Particle.variable("local_ip", String::format("%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]));
   Serial.printlnf("Connected to %s, listening at %d.%d.%d.%d:%d", WiFi.SSID(), ip[0], ip[1], ip[2], ip[3], UDP_PORT);
   strip.setBrightness(30);
 
