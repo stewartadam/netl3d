@@ -1,4 +1,9 @@
-#!/usr/bin/python
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+Takes system microphone input (no parameters) or an audio file (with parameter)
+and performs frequency analysis on the samples read.
+"""
 import scipy
 import pyaudio
 import numpy
@@ -9,7 +14,7 @@ import audiotools
 
 import config
 import netl3d
-import l3d_graph
+import netl3d.graph as graph
 
 # audio settings
 BUFFER = 4096 # length of sample
@@ -24,7 +29,8 @@ FPS = 30
 SCALE_FACTOR = 5
 
 controller = netl3d.netl3d(config.DEVICE_IP)
-g = l3d_graph.graph(controller)
+controller.handshake()
+g = netl3d.graph(controller)
 
 clock = pygame.time.Clock()
 pygame.init()

@@ -1,7 +1,8 @@
+# -*- coding: utf-8 -*-
 """
-Common configuration for all the l3d* scripts.
+Common configuration for all the example scripts.
 
 You should setup a DHCP reservation in your router for the Photon powering the
 L3D cube so that its IP is predicable.
 """
-DEVICE_IP = '192.168.1.1'
+DEVICE_IP = '10.0.1.220'

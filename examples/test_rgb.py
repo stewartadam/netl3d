@@ -1,7 +1,7 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Sets all LEDs in the L3D cube to sequentially iterate through R, B and G color
-at full brightness.
+Sets all LEDs in the L3D cube to sequentially iterate through R, B and G color.
 """
 import time
 
@@ -9,6 +9,7 @@ import config
 import netl3d
 
 controller = netl3d.netl3d(config.DEVICE_IP)
+controller.handshake()
 
 mode = 0
 while True:
@@ -22,7 +23,7 @@ while True:
     controller.send_colors(led, data)
     led += controller.LED_PER_PACKET
 
-  print 'Setting LED color to %s' % ('rgb'[mode])
+  print('Setting LED color to %s' % ('rgb'[mode]))
   mode = (mode + 1) % 3
 
   controller.send_refresh()

@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
 Reads input from the launchpad to controls lighting patterns on the L3D cube.
@@ -15,22 +16,21 @@ Currently, supported buttons and their corresponding actions are:
 - row 3: Produce a 8x8 pixel sheet (xy-plane), offset on the L3D cube equal to the button index
 """
 import pygame
-import launchpad
+import launchpad_py
 
 import config
 import netl3d
+import shapes
 
-class animations:
-  def __init__(self, LP, controller):
+class liveplay:
+  def __init__(self, LP, controller, led_state):
     self.LP = LP
     self.controller = controller
+    self.led_state = led_state
+    self.launchpad_state = {}
+    self.shapes = shapes.shapes(self.controller, self.led_state)
 
     self.LP.Reset()
-
-    launchpad_state = {}
-    led_state = []
-    for i in range(controller.LED_NUM):
-      led_state.append([0, 0, 0])
 
     while 1:
       pygame.time.wait(5)
@@ -40,55 +40,39 @@ class animations:
         button_id = but[0]
         pressed = but[1]
         row, index = self.lp2xy(button_id)
-        print '%s: bid=%d, row=%d, index=%d, pressed=%s' % (but, button_id, row, index, pressed)
+        print('%s: bid=%d, row=%d, index=%d, pressed=%s' % (but, button_id, row, index, pressed))
 
         if pressed:
-          # the rebuild will take care of ensuring pressed buttons have their
-          # lighting effects applied
-          launchpad_state[button_id] = True
+          self.launchpad_state[button_id] = True
           self.LP.LedCtrlRaw(button_id, 0, 3)
         else:
-          # run the appropriate callback to unset LEDs for the effect, then
-          # rebuild L3D state to ensure that if other buttons are still pressed
-          # while this button was released, the unset operation doesn't
-          # deactivate LEDs that should still be on due to other button presses
-          launchpad_state.pop(button_id)
-          callback = self.lp2callback(button_id)
-          callback(led_state, button_id, row, index, pressed)
+          self.launchpad_state.pop(button_id)
           self.LP.LedCtrlRaw(button_id, 0, 0)
-        self.rebuild(launchpad_state, led_state)
+        self.rebuild()
 
     self.LP.Reset() # turn all LEDs off
     self.LP.Close() # close the Launchpad
 
-  # L3D indexes start far back, bottom right and count upward to the right,
-  # then forward
-  def null(self, led_state, button_id, row, index, pressed):
+  def null(self, button_id, row, index, pressed):
     pass
 
-  def wall(self, led_state, button_id, row, index, pressed):
-    for i in range (index*64, (index+1)*64):
-      led_state[i] = self.controller.get_color(pressed, pressed, pressed)
+  def wall(self, button_id, row, index, pressed):
+    self.shapes.wall(index)
 
-  def slice(self, led_state, button_id, row, index, pressed):
-    for i in range(8):
-      for j in range(8):
-        led_state[index*8 + i*64+j] = self.controller.get_color(pressed, pressed, pressed)
+  def slice(self, button_id, row, index, pressed):
+    self.shapes.slice(index)
 
-  def sheet(self, led_state, button_id, row, index, pressed):
-    for i in range(self.controller.LED_NUM / 8):
-      led_state[index + i*8] = self.controller.get_color(pressed, pressed, pressed)
+  def sheet(self, button_id, row, index, pressed):
+    self.shapes.sheet(index)
 
-  def special(self, led_state, button_id, row, index, pressed):
+  def special(self, button_id, row, index, pressed):
     # right side of launchpad
     if row == 0 and pressed:
       # Lights on
-      for i in range(len(led_state)):
-        led_state[i] = self.controller.get_color(1, 1, 1)
+      self.led_state.fill(self.controller.get_color(1, 1, 1))
     elif (row == 7 and pressed) or (row == 0 and not pressed):
       # Temporary blackout
-      for i in range(len(led_state)):
-        led_state[i] = [0, 0, 0]
+      self.led_state.clear()
 
     # top row of launchpad
     elif row == 12:
@@ -104,27 +88,17 @@ class animations:
       elif index == 11 and pressed:
         self.controller.adjust_color_mask(-1)
 
-  def rebuild(self, launchpad_state, led_state):
+  def rebuild(self):
     """
     Rebuilds the L3D state based on pressed buttons only
     """
+    self.led_state.clear()
     pressed = True
-    for button_id in launchpad_state.keys():
+    for button_id in self.launchpad_state.keys():
       row, index = self.lp2xy(button_id)
       callback = self.lp2callback(button_id)
-      callback(led_state, button_id, row, index, pressed)
-
-    start_l3d_offset = 0
-    while (start_l3d_offset + 1 < self.controller.LED_NUM):
-      data = bytearray()
-      for i in range(self.controller.LED_PER_PACKET):
-        l3d_offset = start_l3d_offset + i
-        data.append(led_state[l3d_offset][0])
-        data.append(led_state[l3d_offset][1])
-        data.append(led_state[l3d_offset][2])
-      self.controller.send_colors(start_l3d_offset, data)
-      start_l3d_offset += self.controller.LED_PER_PACKET
-    self.controller.send_refresh()
+      callback(button_id, row, index, pressed)
+    self.led_state.sync()
 
   def lp2callback(self, button_id):
     row, index = self.lp2xy(button_id)
@@ -141,18 +115,20 @@ class animations:
 
   def lp2xy(self, button_id):
     # button ID is 16*row + index
-    row = button_id / 16
+    row = button_id // 16
     index = button_id % 16
     return (row, index)
 
 if __name__ == '__main__':
-  LP = launchpad.Launchpad()
+  LP = launchpad_py.Launchpad()
   LP.Open()
 
   controller = netl3d.netl3d(config.DEVICE_IP)
+  controller.handshake()
+  led_state = netl3d.led_state(controller)
 
   try:
-    animations(LP, controller)
+    liveplay(LP, controller, led_state)
   except KeyboardInterrupt:
     LP.Reset()
     LP.Close()
