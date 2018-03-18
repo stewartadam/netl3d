@@ -115,12 +115,12 @@ while True:
 
   normalized = [(ele/2**BITS_PER_SAMPLE)*2-1 for ele in signal] # normalized on [-1,1]
   fft_orig = abs(scipy.fft(normalized))
-  fft_orig_len = len(fft_orig)/2 # fft is symmetrical for our purposes
+  fft_orig_len = int(len(fft_orig)/2) # fft is symmetrical for our purposes
 
   # throw away first channel (average of all channels), and last to make the set even
   fft = fft_orig[1:fft_orig_len-1]
   # we care more about the lower channels
-  fft = fft[:len(fft)/16]
+  fft = fft[:int(len(fft)/16)]
 
   try:
     num_channels = 8
@@ -160,7 +160,7 @@ while True:
       controller.set_color_mask(j if j > 0 else 7)
 
       point = points_fft[j][1]
-      threshold = i/8*SCALE_FACTOR
+      threshold = i/8.0*SCALE_FACTOR
 
       row.append(controller.get_color(1, 1, 1) if point >= threshold else [0, 0, 0])
     frame.append(row)
