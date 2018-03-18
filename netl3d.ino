@@ -18,6 +18,9 @@
 #define PIXEL_PIN               D0
 #define PIXEL_TYPE              WS2812B
 
+// Enable logging via 'particle serial monitor'
+//SerialLogHandler logHandler(115200, LOG_LEVEL_ALL);
+
 UDP Udp;
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(PIXEL_CNT, PIXEL_PIN, PIXEL_TYPE);
 uint8_t sequence_number = 0;
@@ -80,8 +83,10 @@ void udp_cleanup(){
 }
 
 void loop() {
+  //debug("Loop");
   bytes = Udp.parsePacket();
   if (bytes > 0) {
+    debug(String::format("Received packet of %d bytes", bytes));
     memset(data, '\0', sizeof(char)*MAX_PACKET_SIZE);
 
     Udp.read(data, bytes);
@@ -90,6 +95,7 @@ void loop() {
     if (data[0] == 0) {
       // Seed sequence number
       sequence_number = data[1];
+      debug(String::format("Handshake detected: setting new sequence number=%d", data[1]));
       udp_cleanup();
       return;
     }
