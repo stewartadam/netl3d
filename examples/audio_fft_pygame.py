@@ -59,10 +59,12 @@ def stream_file(in_stream):
 
 p = pyaudio.PyAudio()
 
+output = False
 if len(sys.argv[1:]):
   stream = audiotools.open(sys.argv[1])
   in_stream = stream.to_pcm()
   stream_provider = stream_file
+  output = True
 else:
   in_stream = p.open(format=pyaudio.paInt16, channels=2, rate=RATE, input=True)
   stream_provider = stream_input
@@ -106,7 +108,8 @@ while True:
   pcm = frames.to_bytes(False, True)
   pcm0 = frames.channel(0).to_bytes(False, True)
   pcm1 = frames.channel(1).to_bytes(False, True)
-  out_stream.write(pcm)
+  if output:
+    out_stream.write(pcm)
 
   duration = time.time() - t1
 
