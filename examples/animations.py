@@ -8,6 +8,7 @@ import time
 import pygame
 
 import netl3d
+from netl3d.l3dcube.led_state import led_state
 
 import config
 import shapes
@@ -34,7 +35,7 @@ class animations:
         self.led_state.clear()
         next(step)
         self.led_state.sync()
-        pygame.time.wait(100)
+        time.sleep(.1)
 
   def outer_square(self):
     while True:
@@ -57,8 +58,9 @@ class animations:
         yield self.shapes.centered_cube(8-i, fill=False)
 
 if __name__ == '__main__':
-  controller = netl3d.netl3d(config.DEVICE_IP)
-  led_state = netl3d.led_state(controller)
+  controller = netl3d.netl3d(config.L3D_DEVICE_IP)
+  controller.set_debug(config.DEBUG)
+  led_state = led_state(controller)
   a = animations(controller, led_state)
 
   controller.handshake()

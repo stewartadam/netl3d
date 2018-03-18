@@ -8,7 +8,8 @@ import time
 import config
 import netl3d
 
-controller = netl3d.netl3d(config.DEVICE_IP)
+controller = netl3d.netl3d(config.L3D_DEVICE_IP)
+controller.set_debug(config.DEBUG)
 controller.handshake()
 
 mode = 0

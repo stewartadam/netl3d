@@ -14,7 +14,7 @@ import audiotools
 
 import config
 import netl3d
-import netl3d.graph as graph
+from netl3d.l3dcube import graph
 
 # audio settings
 BUFFER = 4096 # length of sample
@@ -28,9 +28,10 @@ HEIGHT = 400
 FPS = 30
 SCALE_FACTOR = 5
 
-controller = netl3d.netl3d(config.DEVICE_IP)
+controller = netl3d.netl3d(config.L3D_DEVICE_IP)
+controller.set_debug(config.DEBUG)
 controller.handshake()
-g = netl3d.graph(controller)
+g = graph(controller)
 
 clock = pygame.time.Clock()
 pygame.init()

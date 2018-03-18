@@ -10,12 +10,12 @@ import time
 
 import config
 import netl3d
+from netl3d.l3dcube import graph
 
-from netl3d.graph import graph
-
-controller = netl3d.netl3d(config.DEVICE_IP)
+controller = netl3d.netl3d(config.L3D_DEVICE_IP)
+controller.set_debug(config.DEBUG)
 controller.handshake()
-g = netl3d.graph(controller)
+g = graph(controller)
 
 def generate_frame_random():
   while True:

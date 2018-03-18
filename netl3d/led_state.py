@@ -18,33 +18,20 @@ class led_state:
     self.led_state[index] = value
 
   def get_point_index(self, x, y, z):
-    """Gets the offset on the 1D LED state array given 3D point co-ordinates"""
-    return x*64+y*8+z
+    """Gets the LED state offset for the given point"""
+    raise NotImplementedError
 
   def get_point(self, x, y, z):
-    """Returns the LED state at the given 3D point co-ordinates"""
-    return self.led_state[self.get_point_index(x, y, z)]
+    """Gets the LED state at the given point"""
+    raise NotImplementedError
 
   def set_point(self, x, y, z, state):
-    """Sets the LED state at the given 3D point co-ordinates"""
+    """Sets the LED state at the given point"""
     self.led_state[self.get_point_index(x, y, z)] = state
-
-  def fill(self, color=[0, 0, 0]):
-    self.led_state = [color]*self.controller.LED_NUM
 
   def clear(self):
     self.fill([0, 0, 0])
 
   def sync(self):
     """Synchronizes in-memory LED state with device"""
-    start_l3d_offset = 0
-    while (start_l3d_offset < len(self.led_state)):
-      data = bytearray()
-      for i in range(self.controller.LED_PER_PACKET):
-        l3d_offset = start_l3d_offset + i
-        data.append(self.led_state[l3d_offset][0])
-        data.append(self.led_state[l3d_offset][1])
-        data.append(self.led_state[l3d_offset][2])
-      self.controller.send_colors(start_l3d_offset, data)
-      start_l3d_offset += self.controller.LED_PER_PACKET
-    self.controller.send_refresh()
+    raise NotImplementedError

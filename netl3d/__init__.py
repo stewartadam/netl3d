@@ -6,7 +6,6 @@ import binascii
 import math
 import socket
 
-from netl3d.graph import graph
 from netl3d.led_state import led_state
 
 class netl3d:
@@ -24,7 +23,7 @@ class netl3d:
     self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     self.sequence_number = 0
 
-  def set_debug(is_enabled):
+  def set_debug(self, is_enabled):
     self.__debug = is_enabled
 
   def get_debug(self):

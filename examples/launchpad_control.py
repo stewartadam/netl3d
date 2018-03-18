@@ -123,7 +123,8 @@ if __name__ == '__main__':
   LP = launchpad_py.Launchpad()
   LP.Open()
 
-  controller = netl3d.netl3d(config.DEVICE_IP)
+  controller = netl3d.netl3d(config.L3D_DEVICE_IP)
+  controller.set_debug(config.DEBUG)
   controller.handshake()
   led_state = netl3d.led_state(controller)
 
