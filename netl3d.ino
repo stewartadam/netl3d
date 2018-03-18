@@ -21,6 +21,9 @@
 UDP Udp;
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(PIXEL_CNT, PIXEL_PIN, PIXEL_TYPE);
 uint8_t sequence_number = 0;
+// Global because referenced in variable later, do not want it unallocated from stack
+String ip_str = "";
+String ssid_str = "";
 
 void colorWipe(uint32_t c) {
   for(uint16_t i=0; i<strip.numPixels(); i++) {
@@ -40,9 +43,20 @@ void setup() {
   Serial.begin(9600);
   delay(1000); //to give the serial port time to open
 
+  Serial.println("Known networks: ");
+  WiFiAccessPoint ap[5];
+  int network_count = WiFi.getCredentials(ap, 5);
+  for (int i = 0; i < network_count; i++) {
+    Serial.printlnf("%d. ssid=%s security=%s cipher=%s", i+1, ap[i].ssid, ap[i].security, ap[i].cipher);
+    //Serial.printlnf("%d. ssid=%s", i+1, ap[i].ssid);
+  }
+
   IPAddress ip = WiFi.localIP();
-  Particle.variable("local_ip", String::format("%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]));
-  Serial.printlnf("Connected to %s, listening at %d.%d.%d.%d:%d", WiFi.SSID(), ip[0], ip[1], ip[2], ip[3], UDP_PORT);
+  ip_str = String::format("%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
+  ssid_str = String(WiFi.SSID());
+  Particle.variable("local_ip", ip_str);
+  Particle.variable("ssid", ssid_str);
+  Serial.printlnf("Connected to %s, listening at %d.%d.%d.%d:%d", ssid_str.c_str(), ip[0], ip[1], ip[2], ip[3], UDP_PORT);
   strip.setBrightness(30);
 
   strip.begin();
