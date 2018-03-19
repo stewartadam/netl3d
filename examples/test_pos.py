@@ -4,6 +4,7 @@
 Sets all LEDs in the L3D cube to sequentially iterate through R, B and G color.
 """
 import spectra
+import sys
 import time
 
 import config
@@ -14,14 +15,9 @@ controller = l3dcube.Controller(config.L3D_DEVICE_IP)
 controller.set_debug(config.DEBUG)
 controller.handshake()
 
-mode = 0
-while True:
-  print('Setting LED color to %s' % ('rgb'[mode]))
+(x, y, z) = [int(i) for i in sys.argv[1:4]]
 
-  frame = l3dcube.CubeFrame()
-  frame.set_brightness_mask(.5)
-  frame.fill(spectra.rgb((mode == 0), (mode == 1), (mode == 2)))
-  controller.sync(frame)
-
-  mode = (mode + 1) % 3
-  time.sleep(0.5)
+frame = l3dcube.CubeFrame()
+frame.set_brightness_mask(.5)
+frame.set_led((x, y ,z), spectra.rgb(1, 1, 1))
+controller.sync(frame)

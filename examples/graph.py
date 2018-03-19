@@ -4,60 +4,56 @@
 Generates and sends graph frames, rotating graph types every 10s.
 """
 import itertools
-import pygame
 import random
+import spectra
 import time
 
 import config
-import netl3d
-from netl3d.l3dcube import graph
+from netl3d.hardware import l3dcube
 
-controller = netl3d.netl3d(config.L3D_DEVICE_IP)
+controller = l3dcube.GraphController(config.L3D_DEVICE_IP)
 controller.set_debug(config.DEBUG)
 controller.handshake()
-g = graph(controller)
 
 def generate_frame_random():
+  i = 0
   while True:
-    values = []
-    for i in range(8):
-      values.append(random.randint(0, 8))
-    frame = []
-    for i in range(8):
-      row = []
-      for j in range(len(values)):
-        controller.set_color_mask(j)
-        row.append(controller.get_color(1, 1, 1) if values[j] >= i else [0, 0, 0])
-      frame.append(row)
+    frame = l3dcube.GraphFrame()
+    fill_heights = [random.randint(0, 8) for x in range(frame.face_size)]
+
+    for x in range(frame.face_size):
+      frame.set_color_mask(x)
+      for y in range(fill_heights[x]+1):
+        frame.set_led((x, y), frame._apply_masks(spectra.rgb(1, 1, 1)))
     yield frame
 
 def generate_frame_increment():
-  static_value = 1
+  fill_height = 0
   while True:
-    values = []
-    for i in range(8):
-      values.append(static_value)
-    static_value = (static_value + 1) % 8
+    fill_height = (fill_height + 1) % 9
 
-    frame = []
-    for i in range(8):
-      row = []
-      for value in values:
-        row.append([128, 128, 128] if value == i else [0, 0, 0])
-      frame.append(row)
+    frame = l3dcube.GraphFrame()
+    for x in range(frame.face_size):
+      for y in range(fill_height):
+        frame.set_led((x, y), spectra.rgb(1, 1, 1))
+
     yield frame
 
 def generate_frame_sheet():
-  sheet_counter = 0
+  color_mask = 1
   while True:
-    frame = []
-    for i in range(8):
-      row = []
-      for j in range(8):
-        row.append([128, 128, 128] if sheet_counter == 0 else [0, 0, 0])
-      frame.append(row)
-    sheet_counter = (sheet_counter + 1) % 8
+    frame = l3dcube.GraphFrame()
+    frame.set_color_mask(color_mask)
+
+    for x in range(frame.face_size):
+      for y in range(frame.face_size):
+        frame.set_led((x, y), spectra.rgb(1, 1, 1))
+
+    color_mask = max(1, (color_mask + 1) % 8)
     yield frame
+
+    for i in range(3):
+      yield l3dcube.GraphFrame()
 
 def run():
   graphs = itertools.cycle([
@@ -69,12 +65,11 @@ def run():
     step = graph()
     t1 = time.time()
     while True:
-      if time.time() - t1 >= 2:
+      if time.time() - t1 >= 4:
         break
       frame = next(step)
-      g.slide(frame)
-      g.sync()
-      pygame.time.wait(100)
+      controller.sync(frame)
+      time.sleep(0.25)
 
 if __name__ == "__main__":
   run()

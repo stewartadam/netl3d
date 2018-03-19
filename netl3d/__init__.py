@@ -6,8 +6,6 @@ import binascii
 import math
 import socket
 
-from netl3d.led_state import led_state
-
 class netl3d:
   LED_NUM = 512
   LED_PER_PACKET = 256

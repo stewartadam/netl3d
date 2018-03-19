@@ -4,17 +4,18 @@
 Takes system microphone input (no parameters) or an audio file (with parameter)
 and performs frequency analysis on the samples read.
 """
-import scipy
-import pyaudio
-import numpy
-import time
-import pygame
-import sys
 import audiotools
+import numpy
+import pyaudio
+import pygame
+import scipy
+import spectra
+import sys
+import time
 
 import config
 import netl3d
-from netl3d.l3dcube import graph
+from netl3d.hardware import l3dcube
 
 # audio settings
 BUFFER = 4096 # length of sample
@@ -28,10 +29,9 @@ HEIGHT = 400
 FPS = 30
 SCALE_FACTOR = 5
 
-controller = netl3d.netl3d(config.L3D_DEVICE_IP)
+controller = l3dcube.GraphController(config.L3D_DEVICE_IP)
 controller.set_debug(config.DEBUG)
 controller.handshake()
-g = graph(controller)
 
 clock = pygame.time.Clock()
 pygame.init()
@@ -156,17 +156,14 @@ while True:
       print("ERROR: could not draw rect: l=%s t=%s w=%s h=%s" % rect)
       raise
 
-  frame = []
-  for i in range(8):
-    row = []
-    for j in range(8):
-      controller.set_color_mask(j if j > 0 else 7)
-
-      point = points_fft[j][1]
-      threshold = i/8.0*SCALE_FACTOR
-
-      row.append(controller.get_color(1, 1, 1) if point >= threshold else [0, 0, 0])
-    frame.append(row)
+  frame = l3dcube.GraphFrame()
+  for x in range(frame.face_size):
+    frame.set_color_mask(x if x > 0 else 7)
+    point = points_fft[x][1]
+    for y in range(frame.face_size):
+      threshold = y/8.0*SCALE_FACTOR
+      frame.set_led((x, y), frame._apply_masks(spectra.rgb(1, 1, 1)) if point >= threshold else spectra.rgb(0, 0, 0))
+    frame.set_color_mask(7)
 
   current_means = numpy.ndarray(HISTORY_SIZE)
   for i in range(len(means)-1):
@@ -180,6 +177,6 @@ while True:
     print('point=%s, th=%s' % (point, SCALE_FACTOR))
 
   pygame.display.update()
-  g.slide(frame)
+  controller.sync(frame)
   clock.tick(FPS)
   # tick_busy_loop for accuracy

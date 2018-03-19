@@ -39,23 +39,30 @@ class animations:
 
   def outer_square(self):
     while True:
-      yield self.shapes.wall(0)
-      yield self.shapes.slice(7)
-      yield self.shapes.wall(7)
-      yield self.shapes.slice(0)
+      self.shapes.wall(0)
+      yield self.led_state
+      self.shapes.slice(7)
+      yield self.led_state
+      self.shapes.wall(7)
+      yield self.led_state
+      self.shapes.slice(0)
+      yield self.led_state
 
   def expanding_cube(self):
     while True:
       for i in range(2, 9, 2):
-        yield self.shapes.centered_cube(i, fill=False)
+        self.shapes.centered_cube(i, fill=False)
+        yield self.led_state
 
   def heartbeat_cube(self):
     while True:
       self.controller.adjust_color_mask(1)
       for i in range(2, 9, 2):
-        yield self.shapes.centered_cube(i, fill=False)
+        self.shapes.centered_cube(i, fill=False)
+        yield self.led_state
       for i in range(2, 7, 2):
-        yield self.shapes.centered_cube(8-i, fill=False)
+        self.shapes.centered_cube(8-i, fill=False)
+        yield self.led_state
 
 if __name__ == '__main__':
   controller = netl3d.netl3d(config.L3D_DEVICE_IP)
