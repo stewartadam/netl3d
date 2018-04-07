@@ -9,9 +9,9 @@ import math
 import socket
 
 import netl3d
+from . import shapes
 from .frame import CubeFrame
 from .frame import GraphFrame
-from .shapes import Shapes
 
 class Controller(netl3d.Controller):
   LED_NUM = 512

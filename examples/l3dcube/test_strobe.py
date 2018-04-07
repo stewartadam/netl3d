@@ -1,17 +1,22 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Sets all LEDs in the L3D cube to sequentially iterate through R, B and G color.
+Sets all LEDs in the L3D cube to sequentially iterate through R, B and G color
+33 times/second (epilepsy warning)
 """
 import spectra
 import time
 
-import config
 import netl3d
 from netl3d.hardware import l3dcube
 
-controller = l3dcube.Controller(config.L3D_DEVICE_IP)
-controller.set_debug(config.DEBUG)
+config = netl3d.parse_config()
+debug = config['debug']
+ip = config['hardware']['l3dcube']['ip']
+port = config['hardware']['l3dcube']['port']
+
+controller = l3dcube.Controller(ip, port)
+controller.set_debug(debug)
 controller.handshake()
 
 mode = 0
@@ -24,4 +29,4 @@ while True:
   controller.sync(frame)
 
   mode = (mode + 1) % 3
-  time.sleep(0.5)
+  time.sleep(0.01)

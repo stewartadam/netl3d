@@ -1,7 +1,12 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+Fill the entire cube with the color (r, g, b) specified
+"""
 import spectra
 import sys
 
-import config
+import netl3d
 from netl3d.hardware import l3dcube
 
 def usage():
@@ -17,8 +22,13 @@ try:
 except ValueError:
   usage()
 
-controller = l3dcube.Controller(config.L3D_DEVICE_IP)
-controller.set_debug(config.DEBUG)
+config = netl3d.parse_config()
+debug = config['debug']
+ip = config['hardware']['l3dcube']['ip']
+port = config['hardware']['l3dcube']['port']
+
+controller = l3dcube.Controller(ip, port)
+controller.set_debug(debug)
 controller.handshake()
 
 color = spectra.rgb(*rgb)

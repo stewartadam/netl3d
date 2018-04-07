@@ -13,7 +13,6 @@ import spectra
 import sys
 import time
 
-import config
 import netl3d
 from netl3d.hardware import l3dcube
 
@@ -29,8 +28,13 @@ HEIGHT = 400
 FPS = 30
 SCALE_FACTOR = 5
 
-controller = l3dcube.GraphController(config.L3D_DEVICE_IP)
-controller.set_debug(config.DEBUG)
+config = netl3d.parse_config()
+debug = config['debug']
+ip = config['hardware']['l3dcube']['ip']
+port = config['hardware']['l3dcube']['port']
+
+controller = l3dcube.GraphController(ip, port)
+controller.set_debug(debug)
 controller.handshake()
 
 clock = pygame.time.Clock()

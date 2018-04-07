@@ -18,17 +18,15 @@ Currently, supported buttons and their corresponding actions are:
 import pygame
 import launchpad_py
 
-import config
 import netl3d
-import shapes
+from netl3d.hardware import l3dcube
 
 class liveplay:
-  def __init__(self, LP, controller, led_state):
+  def __init__(self, LP, controller):
     self.LP = LP
     self.controller = controller
-    self.led_state = led_state
     self.launchpad_state = {}
-    self.shapes = shapes.shapes(self.controller, self.led_state)
+    self.led_state = l3dcube.CubeFrame()
 
     self.LP.Reset()
 
@@ -57,19 +55,19 @@ class liveplay:
     pass
 
   def wall(self, button_id, row, index, pressed):
-    self.shapes.wall(index)
+    return l3dcube.shapes.wall(index, frame=self.led_state)
 
   def slice(self, button_id, row, index, pressed):
-    self.shapes.slice(index)
+    return l3dcube.shapes.slice(index, frame=self.led_state)
 
   def sheet(self, button_id, row, index, pressed):
-    self.shapes.sheet(index)
+    return l3dcube.shapes.sheet(index, frame=self.led_state)
 
   def special(self, button_id, row, index, pressed):
     # right side of launchpad
     if row == 0 and pressed:
       # Lights on
-      self.led_state.fill(self.controller.get_color(1, 1, 1))
+      self.led_state.fill(self.led_state.get_color(1, 1, 1))
     elif (row == 7 and pressed) or (row == 0 and not pressed):
       # Temporary blackout
       self.led_state.clear()
@@ -77,16 +75,16 @@ class liveplay:
     # top row of launchpad
     elif row == 12:
       # note: row 12 starts at index=8 for some reason
-      increment = 32
+      increment = 1.0/8
       if index == 8 and pressed:
-        self.controller.adjust_brightness(increment)
+        self.led_state.adjust_brightness_mask(increment)
       elif index == 9 and pressed:
-        self.controller.adjust_brightness(-increment)
+        self.led_state.adjust_brightness_mask(-increment)
 
       elif index == 10 and pressed:
-        self.controller.adjust_color_mask(1)
+        self.led_state.adjust_color_mask(1)
       elif index == 11 and pressed:
-        self.controller.adjust_color_mask(-1)
+        self.led_state.adjust_color_mask(-1)
 
   def rebuild(self):
     """
@@ -97,8 +95,9 @@ class liveplay:
     for button_id in self.launchpad_state.keys():
       row, index = self.lp2xy(button_id)
       callback = self.lp2callback(button_id)
+      print ("%d -> %d,%d = %s" % (button_id, row, index, callback))
       callback(button_id, row, index, pressed)
-    self.led_state.sync()
+    self.controller.sync(self.led_state)
 
   def lp2callback(self, button_id):
     row, index = self.lp2xy(button_id)
@@ -123,14 +122,18 @@ if __name__ == '__main__':
   LP = launchpad_py.Launchpad()
   LP.Open()
 
-  controller = netl3d.netl3d(config.L3D_DEVICE_IP)
-  controller.set_debug(config.DEBUG)
+  config = netl3d.parse_config()
+  debug = config['debug']
+  ip = config['hardware']['l3dcube']['ip']
+  port = config['hardware']['l3dcube']['port']
+
+  controller = l3dcube.Controller(ip, port)
+  controller.set_debug(debug)
   controller.handshake()
-  led_state = netl3d.led_state(controller)
 
   try:
-    liveplay(LP, controller, led_state)
-  except KeyboardInterrupt:
+    liveplay(LP, controller)
+  except:
     LP.Reset()
     LP.Close()
     raise

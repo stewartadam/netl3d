@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import spectra
 
 class Frame:
@@ -63,3 +64,8 @@ class Frame:
     self.set_color_mask(self._color_mask + increment)
     if self._color_mask == 0:
       self.adjust_color_mask(increment)
+
+  def get_color(self, r, g, b, a=None):
+    br = self._brightness_mask if a is None else a
+    (r_mask, g_mask, b_mask) = self.get_color_mask()
+    return spectra.rgb(r*br*r_mask, g*br*g_mask, b*br*b_mask)

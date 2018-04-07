@@ -3,6 +3,8 @@ from enum import Enum
 import time
 import uuid
 
+from netl3d.hardware import l3dcube
+
 class merge_strategy(Enum):
   OVERLAY = 1
   DIFFERNECE = 2
@@ -11,12 +13,12 @@ class merge_strategy(Enum):
   EXCLUSIVE = 5
   AVERAGE = 6
 
-class simulator:
+class Simulator:
   animations = []
 
-  def __init__(self, controller, led_state, ticks_per_second=10):
+  def __init__(self, controller, ticks_per_second=10):
     self.controller = controller
-    self.led_state = led_state
+    self.led_state = l3dcube.CubeFrame()
     self.ticks_per_second = ticks_per_second
     self.tick_length = 1.0/ticks_per_second
 
@@ -24,7 +26,7 @@ class simulator:
     while True:
       self.led_state.clear()
       self.merge()
-      self.led_state.sync()
+      self.controller.sync(self.led_state)
 
       time.sleep(self.tick_length)
 
@@ -49,22 +51,21 @@ class simulator:
 
   def merge(self):
     for animation in self.animations:
-      print(animation)
       tmp = next(animation['generator'])
-      state = tmp.led_state
-      zero = self.controller.get_color(0, 0, 0)
+      state = tmp._state_linear
+      zero = self.led_state.get_color(0, 0, 0)
 
       if animation['merge_strategy'] == merge_strategy.OVERLAY:
         for i in range(len(state)):
-          if self.led_state.led_state[i] == zero:
-            self.led_state.led_state[i] = state[i]
+          if self.led_state._state_linear[i].clamped_rgb == zero.clamped_rgb:
+            self.led_state._state_linear[i] = state[i]
       elif animation['merge_strategy'] == merge_strategy.EXCLUSIVE:
-        self.led_state.led_state = state
+        self.led_state._state_linear = state
         break
       elif animation['merge_strategy'] == merge_strategy.AVERAGE:
         for i in state:
           c1 = spectra.rgb(*(self.led_state[i]/255)).to("hsv")
           c2 = spectra.rgb(*(state[i]/255)).to("hsv")
-          self.led_state.led_state[i] = c1.blend(c2).clamped_rgb*255
+          self.led_state._state_linear[i] = c1.blend(c2).clamped_rgb*255
 
       tmp.clear()

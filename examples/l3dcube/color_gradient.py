@@ -6,11 +6,16 @@ Sets all LEDs in the L3D cube to smoothly cycle through colors
 import time
 import spectra
 
-import config
+import netl3d
 from netl3d.hardware import l3dcube
 
-controller = l3dcube.Controller(config.L3D_DEVICE_IP)
-controller.set_debug(config.DEBUG)
+config = netl3d.parse_config()
+debug = config['debug']
+ip = config['hardware']['l3dcube']['ip']
+port = config['hardware']['l3dcube']['port']
+
+controller = l3dcube.Controller(ip, port)
+controller.set_debug(debug)
 controller.handshake()
 
 start = spectra.hsv(0, 1, 1)

@@ -8,12 +8,8 @@ import random
 import spectra
 import time
 
-import config
+import netl3d
 from netl3d.hardware import l3dcube
-
-controller = l3dcube.GraphController(config.L3D_DEVICE_IP)
-controller.set_debug(config.DEBUG)
-controller.handshake()
 
 def generate_frame_random():
   i = 0
@@ -55,7 +51,16 @@ def generate_frame_sheet():
     for i in range(3):
       yield l3dcube.GraphFrame()
 
-def run():
+if __name__ == "__main__":
+  config = netl3d.parse_config()
+  debug = config['debug']
+  ip = config['hardware']['l3dcube']['ip']
+  port = config['hardware']['l3dcube']['port']
+
+  controller = l3dcube.GraphController(ip, port)
+  controller.set_debug(debug)
+  controller.handshake()
+
   graphs = itertools.cycle([
     generate_frame_sheet,
     generate_frame_increment,
@@ -70,6 +75,3 @@ def run():
       frame = next(step)
       controller.sync(frame)
       time.sleep(0.25)
-
-if __name__ == "__main__":
-  run()

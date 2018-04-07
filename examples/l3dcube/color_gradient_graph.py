@@ -7,11 +7,16 @@ the next color.
 import time
 import spectra
 
-import config
+import netl3d
 from netl3d.hardware import l3dcube
 
-controller = l3dcube.GraphController(config.L3D_DEVICE_IP)
-controller.set_debug(config.DEBUG)
+config = netl3d.parse_config()
+debug = config['debug']
+ip = config['hardware']['l3dcube']['ip']
+port = config['hardware']['l3dcube']['port']
+
+controller = l3dcube.GraphController(ip, port)
+controller.set_debug(debug)
 controller.handshake()
 
 start = spectra.hsv(0, 1, 1)

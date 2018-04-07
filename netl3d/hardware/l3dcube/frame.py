@@ -5,7 +5,7 @@ from netl3d.hardware.frame import Frame as GenericFrame
 
 class CubeFrame(GenericFrame):
   """Represents a frame for the L3D Cube"""
-  state_linear = []
+  _state_linear = []
 
   def __init__(self, face_size=8):
     self.face_size = face_size
@@ -19,20 +19,20 @@ class CubeFrame(GenericFrame):
   def get_led_raw(self, pos):
     """Returns the LED state at the given 3D point co-ordinates"""
     (x, y, z) = pos
-    return self.state_linear[self._get_point_index(pos)]
+    return self._state_linear[self._get_point_index(pos)]
 
   def set_led(self, pos, state):
     """Sets the LED state at the given 3D point co-ordinates"""
     (x, y, z) = pos
-    self.state_linear[self._get_point_index(pos)] = state
+    self._state_linear[self._get_point_index(pos)] = state
 
   def fill(self, color):
-    self.state_linear = [color]*self.face_size**3
+    self._state_linear = [color]*self.face_size**3
 
 
 class GraphFrame(GenericFrame):
   """Represents a frame for the L3D Cube"""
-  state_linear = []
+  _state_linear = []
 
   def __init__(self, face_size=8):
     self.face_size = face_size
@@ -46,12 +46,12 @@ class GraphFrame(GenericFrame):
   def get_led_raw(self, pos):
     """Returns the LED state at the given 3D point co-ordinates"""
     (x, y) = pos
-    return self.state_linear[self._get_point_index(pos)]
+    return self._state_linear[self._get_point_index(pos)]
 
   def set_led(self, pos, state):
     """Sets the LED state at the given 3D point co-ordinates"""
     (x, y) = pos
-    self.state_linear[self._get_point_index(pos)] = state
+    self._state_linear[self._get_point_index(pos)] = state
 
   def fill(self, color):
-    self.state_linear = [color]*self.face_size**3
+    self._state_linear = [color]*self.face_size**3
