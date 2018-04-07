@@ -2,6 +2,8 @@ netl3d
 ======
 A small project that lets you control the 8x8x8 [L3D cube](http://www.lookingglassfactory.com/product/8x8x8-l3d-cube/) over the network.
 
+![Rainbow Gradient (graph mode)](https://i.imgur.com/WVnFMIz.gif) ![Audio FFT](https://i.imgur.com/UWtlJlN.gif)
+
 Optionally, pair it with a [Novation Launchpad](https://global.novationmusic.com/launch/launchpad) and use it to play light on the cube.
 
 ## Features
@@ -9,6 +11,7 @@ Optionally, pair it with a [Novation Launchpad](https://global.novationmusic.com
 - Graphing mode (8x 8x8 LED frames, so 1 current frame with 7 frames of history)
 - Launchpad control mode, tested with Launchpad MK1
 - Several bundled examples including FFT analysis ('beat sync'), rainbow loop, animations, and a simulator for compositing multiple effects
+
 
 Planned "soon":
 - Aurora Nanoleaf support
