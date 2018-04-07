@@ -3,7 +3,7 @@
  */
 #include "neopixel/neopixel.h"
 
-#define ENABLE_DEBUG            FALSE
+#define ENABLE_DEBUG            true
 
 #define SIDE                    8   //8x8x8 Cube size
 #define PIXELS_PER_PANEL        (PIXEL_CNT / SIDE)
@@ -27,6 +27,7 @@ uint8_t sequence_number = 0;
 // Global because referenced in variable later, do not want it unallocated from stack
 String ip_str = "";
 String ssid_str = "";
+bool udp_needs_init = true;
 
 void colorWipe(uint32_t c) {
   for(uint16_t i=0; i<strip.numPixels(); i++) {
@@ -36,22 +37,20 @@ void colorWipe(uint32_t c) {
 }
 
 void setup() {
+  Serial.begin(9600);
+  delay(1000); //to give the serial port time to open
+
+  debug("Entering setup sequence");
+
   pinMode(PIXEL_PIN, OUTPUT);
 
   WiFi.selectAntenna(ANT_AUTO);
-
-  Udp.setBuffer(1500);
-  Udp.begin(UDP_PORT);
-
-  Serial.begin(9600);
-  delay(1000); //to give the serial port time to open
 
   Serial.println("Known networks: ");
   WiFiAccessPoint ap[5];
   int network_count = WiFi.getCredentials(ap, 5);
   for (int i = 0; i < network_count; i++) {
     Serial.printlnf("%d. ssid=%s security=%s cipher=%s", i+1, ap[i].ssid, ap[i].security, ap[i].cipher);
-    //Serial.printlnf("%d. ssid=%s", i+1, ap[i].ssid);
   }
 
   IPAddress ip = WiFi.localIP();
@@ -60,8 +59,10 @@ void setup() {
   Particle.variable("local_ip", ip_str);
   Particle.variable("ssid", ssid_str);
   Serial.printlnf("Connected to %s, listening at %d.%d.%d.%d:%d", ssid_str.c_str(), ip[0], ip[1], ip[2], ip[3], UDP_PORT);
-  strip.setBrightness(30);
 
+  udp_setup();
+
+  strip.setBrightness(30);
   strip.begin();
   strip.show();
   colorWipe(strip.Color(0xFF, 0xE6, 0x9B));
@@ -72,19 +73,38 @@ unsigned long bytes;
 int voxelIdx = 0;
 
 void debug(String message) {
-  #ifdef ENABLE_DEBUG
+  #if ENABLE_DEBUG
   Serial.printlnf(message);
   #endif
 }
 
-void udp_cleanup(){
+void udp_cleanup() {
   // Ignore other chars
   Udp.flush();
 }
 
+void udp_setup() {
+  debug(String::format("Initializing UDP...", bytes));
+  Udp.stop();
+  Udp.setBuffer(1500);
+  Udp.begin(UDP_PORT);
+  udp_needs_init = false;
+}
+
 void loop() {
-  //debug("Loop");
   bytes = Udp.parsePacket();
+  if (!WiFi.ready()) {
+    // We lost wifi and will need to manually reinitialize the socket until
+    // this is fixed: https://github.com/particle-iot/firmware/pull/766
+    debug(String::format("Lost wifi... waiting", bytes));
+    udp_needs_init = true;
+    delay(100);
+    return;
+  }
+  if (udp_needs_init) {
+    udp_setup();
+  }
+
   if (bytes > 0) {
     debug(String::format("Received packet of %d bytes", bytes));
     memset(data, '\0', sizeof(char)*MAX_PACKET_SIZE);
@@ -152,5 +172,10 @@ void loop() {
     }
 
     udp_cleanup();
+  }
+  else {
+    // I have a hunch without a delay, too busy processing UDP traffic and
+    // cloud connection gets lost
+    //delay(5);
   }
 }
