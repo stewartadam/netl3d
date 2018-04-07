@@ -5,14 +5,15 @@ A small project that lets you control the 8x8x8 [L3D cube](http://www.lookinggla
 Optionally, pair it with a [Novation Launchpad](https://global.novationmusic.com/launch/launchpad) and use it to play light on the cube.
 
 ## Features
-- Works on Linux, OS X (Sierra) and Windows
-- Graphing mode (8x 8x8 LED frames, so 1 current frame with 7 frames history)
-- RGB test mode (cycles through colors)
+- Works on Linux, OS X (High Sierra) and Windows
+- Graphing mode (8x 8x8 LED frames, so 1 current frame with 7 frames of history)
 - Launchpad control mode, tested with Launchpad MK1
+- Several bundled examples including FFT analysis ('beat sync'), rainbow loop, animations, and a simulator for compositing multiple effects
 
 Planned "soon":
+- Aurora Nanoleaf support
 - Lighting effect / animation library
-- Scripted animations (think synced to music)
+- Scripted animations (e.g. synced to music)
 
 ## Setup
 1. Setup the Photon device embedded in your L3D cube and connect it to wifi. If you're not sure how to do this, see the official [L3D Cube](http://cubetube.org/docs/) or [Particle Photon](https://docs.particle.io/guide/getting-started/start/core/) documentation respectively.
@@ -23,22 +24,36 @@ Planned "soon":
 Your L3D cube is now ready to accept network instructions.
 
 ## Running the examples
-Update `examples/config.py` with the Photon's IP address, then run any of the examples directly.
+Examples for netl3d read from the YAML configuration file, located at `~/.netl3d` (on Windows, `~` is `%USERPROFILE%`).
+
+Create this file with the following contents:
+```
+debug: false
+
+hardware:
+  l3dcube:
+    ip: 192.168.1.101
+    port: 65506
+  aurora:
+    ip: 192.168.1.102
+    auth_token: token_here
+```
+Replace the hardware.l3dcube.ip key with your L3D cube's photon IP address, then run any of the examples directly.
 
 If you need to install dependencies (see below), I strongly recommend you do so in a venv, and via `pip`
 ```
 python3 -m venv --system-site-packages netl3d
-pip install ...
+pip install -r requirements.txt
 ```
 
 To activate the environment again later, run:
 ```
 source netl3d/bin/activate
-python examples/foo.py
+python examples/netl3d/foo.py
 ```
 
 The examples noted below have additional dependencies:
-### `fft_pygame.py`
+### `audio_fft_pygame.py`
 - [audiotools](http://audiotools.sourceforge.net/)
 - [numpy](http://www.numpy.org/)
 - [pygame](http://www.pygame.org/lofi.html)
@@ -75,6 +90,8 @@ Currently, supported buttons and their corresponding actions are:
 - row 3: Produce a 8x8 pixel sheet (xy-plane), offset on the L3D cube equal to the button index
 
 ## Resources
+For added fun, you can also use software such as [Soundflower](https://rogueamoeba.com/freebies/soundflower/) to virtualize an input audio device that 'captures' the system's current audio out stream (you will need to configure a merged Speaker+Soundflower device in MIDI Setup).
+
 I found these resources helpful while writing this project:
 - Understanding the Fast Fourier Transform: [Analyze audio using Fast Fourier Transform](http://stackoverflow.com/questions/604453/analyze-audio-using-fast-fourier-transform), [Python Scipy FFT wav files](http://stackoverflow.com/questions/23377665/python-scipy-fft-wav-files) and [How do I obtain the frequencies of each value in an FFT?](http://stackoverflow.com/questions/4364823/how-do-i-obtain-the-frequencies-of-each-value-in-an-fft)
 - For scaling down the number of FFT bins from N down to 8: [Averaging over every n elements of a numpy array](http://stackoverflow.com/questions/15956309/averaging-over-every-n-elements-of-a-numpy-array) and [Reshape using a shape which is not a divisible factor of length of the list](http://stackoverflow.com/questions/10243878/reshape-using-a-shape-which-is-not-a-divisible-factor-of-length-of-the-list)

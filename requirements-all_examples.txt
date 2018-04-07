@@ -1,0 +1,6 @@
+spectra
+pyaudio
+pygame
+audiotools
+scipy
+launchpad_py
