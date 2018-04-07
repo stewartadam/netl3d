@@ -8,11 +8,12 @@ import binascii
 import math
 import socket
 
+import netl3d
 from .frame import CubeFrame
 from .frame import GraphFrame
+from .shapes import Shapes
 
-
-class Controller:
+class Controller(netl3d.Controller):
   LED_NUM = 512
   LED_PER_PACKET = 256
   MAX_SEQUENCE_NUM = 256
