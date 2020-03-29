@@ -1,0 +1,5 @@
+# particle
+lib/
+private/
+src/*.cpp
+.vscode/
