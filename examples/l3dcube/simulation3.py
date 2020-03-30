@@ -3,9 +3,11 @@
 """
 Runs multiple effects in a simulator, composing them onto a single cube
 """
+import time
+
 import netl3d
 from netl3d.hardware import l3dcube
-from netl3d.simulator import Simulator
+from netl3d.simulator import Simulator, merge_strategy
 import animations
 
 if __name__ == '__main__':
@@ -20,12 +22,17 @@ if __name__ == '__main__':
 
   import threading
   stop = threading.Event()
-  sim = Simulator(stop, controller, ticks_per_second=2)
-  sim.add_animation(animations.outer_square(l3dcube.CubeFrame()))
-  sim.add_animation(animations.heartbeat_cube(l3dcube.CubeFrame()), priority=1)
+  sim = Simulator(stop, controller, ticks_per_second=4)
 
-  sim.start()
+  sim.add_animation(animations.rain(l3dcube.CubeFrame()))
+  sim.add_animation(animations.rain(l3dcube.CubeFrame()))
+  sim.add_animation(animations.rain(l3dcube.CubeFrame()))
+
   try:
+    sim.start()
     sim.join()
   except KeyboardInterrupt:
     stop.set()
+  except:
+    stop.set()
+    raise

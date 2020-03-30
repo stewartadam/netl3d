@@ -7,6 +7,19 @@ from .frame import CubeFrame
 def null():
     pass
 
+def solid_fill(color, frame=None):
+  if frame is None:
+    frame = CubeFrame()
+  frame.fill(color)
+  return frame
+
+def column(x, z, color, frame=None):
+  if frame is None:
+    frame = CubeFrame()
+  for y in range(frame.face_size):
+    frame.set_led((x, y, z), color)
+  return frame
+
 def wall(z, frame=None):
   if frame is None:
     frame = CubeFrame()
