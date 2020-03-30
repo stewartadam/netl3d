@@ -153,6 +153,10 @@ while True:
   fft_len = len(fft) // 2
   fft = fft[:fft_len]
 
+  # Truncate 2.5kHz-5kHz range
+  fft_len = len(fft) // 2
+  fft = fft[:fft_len]
+
   try:
     window_sz = len(fft) // TARGET_BIN_COUNT
     window_sz_cube = len(fft) // 8
