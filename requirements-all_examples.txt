@@ -4,3 +4,4 @@ pygame
 audiotools
 scipy
 launchpad_py
+pyyaml
