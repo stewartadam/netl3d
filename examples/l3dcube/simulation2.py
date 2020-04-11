@@ -22,18 +22,17 @@ if __name__ == '__main__':
 
   import threading
   stop = threading.Event()
-  sim = Simulator(stop, controller, ticks_per_second=24)
-  sim.add_animation(animations.heartbeat_cube(l3dcube.CubeFrame()), priority=1, tick_multiplier=0.5)
-  #sim.add_animation(animations.strobe(l3dcube.CubeFrame()), priority=2, strategy=merge_strategy.OVERLAY, tick_multiplier=0.25)
+  sim = Simulator(stop, controller, ticks_per_second=60)
+  sim.add_animation(animations.heartbeat_cube, priority=1)
 
   try:
     sim.start()
     time.sleep(2)
-    id1 = sim.add_animation(animations.random_col(l3dcube.CubeFrame()), priority=4, tick_multiplier=0.75)
+    id1 = sim.add_animation(animations.random_col, priority=4)
     time.sleep(2)
-    id2 = sim.add_animation(animations.random_col(l3dcube.CubeFrame()), priority=4, tick_multiplier=0.75)
+    id2 = sim.add_animation(animations.random_col, priority=4)
     time.sleep(2)
-    id3 = sim.add_animation(animations.random_col(l3dcube.CubeFrame()), priority=4, tick_multiplier=0.75)
+    id3 = sim.add_animation(animations.random_col, priority=4)
     time.sleep(2)
     sim.delete_animation(id1)
     time.sleep(2)

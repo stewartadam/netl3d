@@ -20,9 +20,9 @@ if __name__ == '__main__':
 
   import threading
   stop = threading.Event()
-  sim = Simulator(stop, controller, ticks_per_second=2)
-  sim.add_animation(animations.outer_square(l3dcube.CubeFrame()))
-  sim.add_animation(animations.heartbeat_cube(l3dcube.CubeFrame()), priority=1)
+  sim = Simulator(stop, controller)
+  sim.add_animation(animations.outer_square)
+  sim.add_animation(animations.heartbeat_cube, priority=1)
 
   sim.start()
   try:

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from enum import Enum
+import spectra
 import time
 import threading
 import uuid
@@ -19,7 +20,7 @@ class Simulator(threading.Thread):
   animations = {}
   signals = {}
 
-  def __init__(self, stop_signal, controller, ticks_per_second=10):
+  def __init__(self, stop_signal, controller, ticks_per_second=30):
     threading.Thread.__init__(self)
     self.signals['stop'] = stop_signal
     self.controller = controller
@@ -37,15 +38,20 @@ class Simulator(threading.Thread):
       time.sleep(self.tick_length)
       self.tick_num = (self.tick_num + 1) % self.ticks_per_second
 
-  def add_animation(self, generator, strategy=merge_strategy.OVERLAY, priority=0, tick_multiplier=1):
+  def add_animation(self, runable, strategy=merge_strategy.OVERLAY, priority=0):
+    frame = l3dcube.CubeFrame()
+    thread = threading.Thread(target=runable, args=(frame,))
+    thread.daemon = True
+    thread.start()
+
     id = str(uuid.uuid4())
     self.queued_animations[id] = {
-      'generator': generator,
+      'runable': runable,
+      'thread': thread,
+      'frame': frame,
       'priority': priority,
-      'tick_multiplier': tick_multiplier,
       'merge_strategy': strategy,
     }
-    self.sort_animations()
     return id
 
   def delete_animation(self, id):
@@ -70,22 +76,7 @@ class Simulator(threading.Thread):
         self.animations.pop(id)
         continue
 
-      # If we are not meant to render this tick, copy prior frame
-      animation_frame = None
-      if self.tick_num*animation['tick_multiplier'] % 1 == 0:
-        animation_frame = next(animation['generator'])
-      else:
-        if 'last_frame' in self.animations[id]:
-          animation_frame = self.animations[id]['last_frame']
-          animation['merge_strategy'] = merge_strategy.OVERLAY
-        else:
-          # animations that were recently added have no last_frame, so we should
-          # render thier first frame and use it
-          animation_frame = next(animation['generator'])
-          animation['merge_strategy'] = merge_strategy.OVERLAY
-
-      state = animation_frame._state_linear
-      self.animations[id]['last_frame'] = animation_frame
+      state = animation['frame']._state_linear
 
       zero = self.led_state.get_color(0, 0, 0)
       if animation['merge_strategy'] == merge_strategy.OVERLAY:

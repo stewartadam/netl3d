@@ -10,11 +10,12 @@ import time
 import netl3d
 from netl3d.hardware import l3dcube
 
-def random_col(frame):
+def random_col(frame, speed=0.5):
   while True:
     x = random.randint(0, frame.face_size-1)
     y = random.randint(0, frame.face_size-1)
-    yield l3dcube.shapes.column(x, y, frame.get_color(1, 0, 1, 255), frame)
+    l3dcube.shapes.column(x, y, frame.get_color(1, 0, 1, 255), frame)
+    time.sleep(speed)
     frame.clear()
 
 def rain(frame):
@@ -22,75 +23,75 @@ def rain(frame):
   while True:
     x = random.randint(0, frame.face_size-1)
     start_y = random.randint(rain_length-1, frame.face_size-1)
+    #start_y = random.randint(0, frame.face_size-1)
     z = random.randint(0, frame.face_size-1)
-    frame = l3dcube.frame.CubeFrame()
 
-    frame.set_led((x, start_y, z), frame.get_color(1, 1, 1))
-    yield frame
-    #time.sleep(90.0/1000)
-    frame.set_led((x, start_y-1, z), frame.get_color(1, 1, 1))
-    yield frame
-    #time.sleep(85.0/1000)
-    frame.set_led((x, start_y-2, z), frame.get_color(1, 1, 1))
-    yield frame
-    #time.sleep(270.0/1000)
+    frame.set_led((x, start_y, z), frame.get_color(1, 1, 1), verify_bounds=True)
+    time.sleep(90.0/1000)
+    frame.set_led((x, start_y-1, z), frame.get_color(1, 1, 1), verify_bounds=True)
+    time.sleep(85.0/1000)
+    frame.set_led((x, start_y-2, z), frame.get_color(1, 1, 1), verify_bounds=True)
+    time.sleep(270.0/1000)
 
     frame.clear()
-    frame.set_led((x, start_y-3, z), frame.get_color(1, 1, 1))
-    yield frame
-    #time.sleep(495.0/1000)
+    frame.set_led((x, start_y-3, z), frame.get_color(1, 1, 1), verify_bounds=True)
+    time.sleep(495.0/1000)
     frame.clear()
 
-    frame.set_led((x, start_y, z), frame.get_color(1, 1, 1))
-    yield frame
-    #time.sleep(90.0/1000)
-    frame.set_led((x, start_y-1, z), frame.get_color(1, 1, 1))
-    yield frame
-    #time.sleep(90.0/1000)
-    frame.set_led((x, start_y-2, z), frame.get_color(1, 1, 1))
-    yield frame
-    #time.sleep(765.0/1000)
-
+    frame.set_led((x, start_y, z), frame.get_color(1, 1, 1), verify_bounds=True)
+    time.sleep(90.0/1000)
+    frame.set_led((x, start_y-1, z), frame.get_color(1, 1, 1), verify_bounds=True)
+    time.sleep(90.0/1000)
+    frame.set_led((x, start_y-2, z), frame.get_color(1, 1, 1), verify_bounds=True)
+    time.sleep(765.0/1000)
     frame.clear()
-    yield frame
 
-def strobe(frame):
+def strobe(frame, speed=0.05):
   while True:
-    yield l3dcube.shapes.solid_fill(frame.get_color(1, 1, 1, 255), frame=frame)
+    l3dcube.shapes.solid_fill(frame.get_color(1, 1, 1, 255), frame=frame)
+    time.sleep(speed)
     frame.clear()
-    yield l3dcube.shapes.solid_fill(frame.get_color(1, 1, 1, 0), frame=frame)
+    l3dcube.shapes.solid_fill(frame.get_color(1, 1, 1, 0), frame=frame)
+    time.sleep(speed)
     frame.clear()
 
-def outer_square(frame):
+def outer_square(frame, speed=0.25):
   while True:
-    yield l3dcube.shapes.wall(0, frame)
+    l3dcube.shapes.wall(0, frame)
+    time.sleep(speed)
     frame.clear()
-    yield l3dcube.shapes.slice(7, frame)
+    l3dcube.shapes.slice(7, frame)
+    time.sleep(speed)
     frame.clear()
-    yield l3dcube.shapes.wall(7, frame)
+    l3dcube.shapes.wall(7, frame)
+    time.sleep(speed)
     frame.clear()
-    yield l3dcube.shapes.slice(0, frame)
+    l3dcube.shapes.slice(0, frame)
+    time.sleep(speed)
     frame.clear()
     frame.adjust_color_mask(1)
 
-def expanding_cube(frame):
+def expanding_cube(frame, speed=0.1):
   while True:
     frame.adjust_color_mask(1)
     for i in range(2, 9, 2):
-      yield l3dcube.shapes.centered_cube(i, frame=frame, fill=False)
+      l3dcube.shapes.centered_cube(i, frame=frame, fill=False)
+      time.sleep(speed)
       frame.clear()
 
-def heartbeat_cube(frame):
+def heartbeat_cube(frame, speed=0.1):
   while True:
     frame.adjust_color_mask(1)
     for i in range(2, 9, 2):
-      yield l3dcube.shapes.centered_cube(i, frame=frame, fill=False)
+      l3dcube.shapes.centered_cube(i, frame=frame, fill=False)
+      time.sleep(speed)
       frame.clear()
     for i in range(2, 7, 2):
-      yield l3dcube.shapes.centered_cube(8-i, frame=frame, fill=False)
+      l3dcube.shapes.centered_cube(8-i, frame=frame, fill=False)
+      time.sleep(speed)
       frame.clear()
 
-def pulse(frame):
+def pulse(frame, speed=0.5):
   # Terrible way of going about this, but it works for now/demo purposes
   while True:
     frame.adjust_color_mask(1)
@@ -114,34 +115,6 @@ def pulse(frame):
         inverse_brightness = 1 - steps[2][1]
         brightness = 1 - ( (i-start)/length * inverse_brightness )
       frame.set_brightness_mask(brightness)
-      yield l3dcube.shapes.centered_cube(8, frame=frame, fill=True)
+      l3dcube.shapes.centered_cube(8, frame=frame, fill=True)
+      time.sleep(speed)
       frame.clear()
-
-if __name__ == '__main__':
-  config = netl3d.parse_config()
-  debug = config['debug']
-  ip = config['hardware']['l3dcube']['ip']
-  port = config['hardware']['l3dcube']['port']
-
-  controller = l3dcube.Controller(ip, port)
-  controller.set_debug(debug)
-  controller.handshake()
-
-  animations = itertools.cycle([
-    pulse,
-    expanding_cube,
-    outer_square,
-    heartbeat_cube,
-    outer_square,
-  ])
-  for animation in animations:
-    frame = l3dcube.CubeFrame()
-    step = animation(frame)
-    t1 = time.time()
-    while 1:
-      if time.time() - t1 >= 4:
-        break
-      frame.clear()
-      frame = next(step)
-      controller.sync(frame)
-      time.sleep(.075)

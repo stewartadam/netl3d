@@ -22,11 +22,18 @@ if __name__ == '__main__':
 
   import threading
   stop = threading.Event()
-  sim = Simulator(stop, controller, ticks_per_second=4)
+  sim = Simulator(stop, controller, ticks_per_second=30)
 
-  sim.add_animation(animations.rain(l3dcube.CubeFrame()))
-  sim.add_animation(animations.rain(l3dcube.CubeFrame()))
-  sim.add_animation(animations.rain(l3dcube.CubeFrame()))
+  sim.add_animation(animations.rain)
+  sim.add_animation(animations.rain)
+  sim.add_animation(animations.rain)
+  sim.add_animation(animations.rain)
+  sim.add_animation(animations.rain)
+  sim.add_animation(animations.rain)
+  sim.add_animation(animations.rain)
+  sim.add_animation(animations.rain)
+  sim.add_animation(animations.rain)
+  sim.add_animation(animations.rain)
 
   try:
     sim.start()
