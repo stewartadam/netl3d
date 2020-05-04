@@ -17,7 +17,7 @@ import netl3d
 from netl3d.hardware import l3dcube
 
 # audio settings
-SAMPLES = 1024 # length of sample
+SAMPLES = 192 # length of sample
 RATE = 44100 # bitrate to record
 BITS_PER_SAMPLE = 16
 HISTORY_SIZE = 120
@@ -31,12 +31,11 @@ FPS = 30
 TARGET_BIN_COUNT = 32
 
 config = netl3d.parse_config()
-debug = config['debug']
+netl3d.configure_logging(config)
 ip = config['hardware']['l3dcube']['ip']
 port = config['hardware']['l3dcube']['port']
 
-controller = l3dcube.GraphController(ip, port)
-controller.set_debug(debug)
+controller = l3dcube.L3DGraphController(ip, port)
 controller.handshake()
 
 clock = pygame.time.Clock()

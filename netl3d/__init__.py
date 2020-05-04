@@ -1,24 +1,23 @@
-# -*- coding: utf-8 -*-
 """
 Common utilities for controlling L3Ds
 """
+import logging
 import os.path
-import spectra
 import yaml
 
-def parse_config(config_path="~/.netl3d"):
+from . import base
+from . import effects
+from . import hardware
+from . import transforms
+from . import simulator
+
+def parse_config(config_path: str = "~/.netl3d") -> dict:
   return yaml.safe_load(open(os.path.expanduser(config_path)))
 
-class Controller:
-  __debug = False
 
-  def set_debug(self, is_enabled):
-    self.__debug = is_enabled
-
-  def get_debug(self):
-    return self.__debug
-
-  def debug(self, message):
-    if not self.get_debug():
-      return
-    print(message)
+def configure_logging(config: dict) -> None:
+  logLevel = getattr(logging, config['logging']['default'].upper())
+  logging.basicConfig(level=logLevel)
+  for key, value in config['logging'].items():
+    if key != 'default':
+      logging.getLogger(key).setLevel(getattr(logging, value.upper()))

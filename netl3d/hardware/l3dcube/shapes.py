@@ -1,26 +1,27 @@
-# -*- coding: utf-8 -*-
 """
 Different lighting shapes for the L3D cube.
 """
-from .frame import CubeFrame
+import spectra
 
-def null():
+from .l3dframe import CubeFrame
+
+def null() -> CubeFrame:
     pass
 
-def solid_fill(color, frame=None):
+def solid_fill(color: spectra.rgb, frame: CubeFrame = None) -> CubeFrame:
   if frame is None:
     frame = CubeFrame()
   frame.fill(color)
   return frame
 
-def column(x, z, color, frame=None):
+def column(x: int, z: int, color: spectra.rgb, frame: CubeFrame = None) -> CubeFrame:
   if frame is None:
     frame = CubeFrame()
   for y in range(frame.face_size):
     frame.set_led((x, y, z), color)
   return frame
 
-def wall(z, frame=None):
+def wall(z: int, frame: CubeFrame = None) -> CubeFrame:
   if frame is None:
     frame = CubeFrame()
   for x in range(frame.face_size):
@@ -28,7 +29,7 @@ def wall(z, frame=None):
       frame.set_led((x, y, z), frame.get_color(1, 1, 1))
   return frame
 
-def slice(x, frame=None):
+def slice(x: int, frame: CubeFrame = None) -> CubeFrame:
   if frame is None:
     frame = CubeFrame()
   for y in range(frame.face_size):
@@ -36,7 +37,7 @@ def slice(x, frame=None):
       frame.set_led((x, y, z), frame.get_color(1, 1, 1))
   return frame
 
-def sheet(y, frame=None):
+def sheet(y: int, frame: CubeFrame = None) -> CubeFrame:
   if frame is None:
     frame = CubeFrame()
   for x in range(frame.face_size):
@@ -44,7 +45,7 @@ def sheet(y, frame=None):
       frame.set_led((x, y, z), frame.get_color(1, 1, 1))
   return frame
 
-def centered_cube(size, frame=None, fill=True):
+def centered_cube(size: int, frame: CubeFrame = None, fill: bool = True) -> CubeFrame:
   if frame is None:
     frame = CubeFrame()
   if size % 2 == 1:

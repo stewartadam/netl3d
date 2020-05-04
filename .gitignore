@@ -93,3 +93,7 @@ ENV/
 
 # VS Code
 .vscode/
+*.code-workspace
+
+# Pipenv
+Pipfile.lock

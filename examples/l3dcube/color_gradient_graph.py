@@ -11,12 +11,11 @@ import netl3d
 from netl3d.hardware import l3dcube
 
 config = netl3d.parse_config()
-debug = config['debug']
+netl3d.configure_logging(config)
 ip = config['hardware']['l3dcube']['ip']
 port = config['hardware']['l3dcube']['port']
 
-controller = l3dcube.GraphController(ip, port)
-controller.set_debug(debug)
+controller = l3dcube.L3DGraphController(ip, port)
 controller.handshake()
 
 start = spectra.hsv(0, 1, 1)

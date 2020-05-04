@@ -11,12 +11,11 @@ import netl3d
 from netl3d.hardware import l3dcube
 
 config = netl3d.parse_config()
-debug = config['debug']
+netl3d.configure_logging(config)
 ip = config['hardware']['l3dcube']['ip']
 port = config['hardware']['l3dcube']['port']
 
-controller = l3dcube.Controller(ip, port)
-controller.set_debug(debug)
+controller = l3dcube.L3DController(ip, port)
 controller.handshake()
 
 mode = 0
@@ -24,7 +23,7 @@ while True:
   print('Setting LED color to %s' % ('rgb'[mode]))
 
   frame = l3dcube.CubeFrame()
-  frame.set_brightness_mask(.5)
+  frame.set_brightness_mask(.3)
   frame.fill(spectra.rgb((mode == 0), (mode == 1), (mode == 2)))
   controller.sync(frame)
 

@@ -1,16 +1,15 @@
-# -*- coding: utf-8 -*-
 """
 Orchestrates individual shapes into animations, rotation animations every 10s
 """
-import itertools
-import pygame
 import random
 import time
 
-import netl3d
+from netl3d.base import FramePublisher
 from netl3d.hardware import l3dcube
 
-def random_col(frame, speed=0.5):
+from .rain import rain
+
+def random_col(frame: l3dcube.CubeFrame, fp: FramePublisher, speed: float = 0.5) -> None:
   while True:
     x = random.randint(0, frame.face_size-1)
     y = random.randint(0, frame.face_size-1)
@@ -18,35 +17,7 @@ def random_col(frame, speed=0.5):
     time.sleep(speed)
     frame.clear()
 
-def rain(frame):
-  rain_length = 4
-  while True:
-    x = random.randint(0, frame.face_size-1)
-    start_y = random.randint(rain_length-1, frame.face_size-1)
-    #start_y = random.randint(0, frame.face_size-1)
-    z = random.randint(0, frame.face_size-1)
-
-    frame.set_led((x, start_y, z), frame.get_color(1, 1, 1), verify_bounds=True)
-    time.sleep(90.0/1000)
-    frame.set_led((x, start_y-1, z), frame.get_color(1, 1, 1), verify_bounds=True)
-    time.sleep(85.0/1000)
-    frame.set_led((x, start_y-2, z), frame.get_color(1, 1, 1), verify_bounds=True)
-    time.sleep(270.0/1000)
-
-    frame.clear()
-    frame.set_led((x, start_y-3, z), frame.get_color(1, 1, 1), verify_bounds=True)
-    time.sleep(495.0/1000)
-    frame.clear()
-
-    frame.set_led((x, start_y, z), frame.get_color(1, 1, 1), verify_bounds=True)
-    time.sleep(90.0/1000)
-    frame.set_led((x, start_y-1, z), frame.get_color(1, 1, 1), verify_bounds=True)
-    time.sleep(90.0/1000)
-    frame.set_led((x, start_y-2, z), frame.get_color(1, 1, 1), verify_bounds=True)
-    time.sleep(765.0/1000)
-    frame.clear()
-
-def strobe(frame, speed=0.05):
+def strobe(frame: l3dcube.CubeFrame, fp: FramePublisher, speed: float = 0.05) -> None:
   while True:
     l3dcube.shapes.solid_fill(frame.get_color(1, 1, 1, 255), frame=frame)
     time.sleep(speed)
@@ -55,7 +26,7 @@ def strobe(frame, speed=0.05):
     time.sleep(speed)
     frame.clear()
 
-def outer_square(frame, speed=0.25):
+def outer_square(frame: l3dcube.CubeFrame, fp: FramePublisher, speed: float = 0.25) -> None:
   while True:
     l3dcube.shapes.wall(0, frame)
     time.sleep(speed)
@@ -71,7 +42,7 @@ def outer_square(frame, speed=0.25):
     frame.clear()
     frame.adjust_color_mask(1)
 
-def expanding_cube(frame, speed=0.1):
+def expanding_cube(frame: l3dcube.CubeFrame, fp: FramePublisher, speed: float = 0.1) -> None:
   while True:
     frame.adjust_color_mask(1)
     for i in range(2, 9, 2):
@@ -79,7 +50,7 @@ def expanding_cube(frame, speed=0.1):
       time.sleep(speed)
       frame.clear()
 
-def heartbeat_cube(frame, speed=0.1):
+def heartbeat_cube(frame: l3dcube.CubeFrame, fp: FramePublisher, speed: float = 0.1) -> None:
   while True:
     frame.adjust_color_mask(1)
     for i in range(2, 9, 2):
@@ -91,7 +62,7 @@ def heartbeat_cube(frame, speed=0.1):
       time.sleep(speed)
       frame.clear()
 
-def pulse(frame, speed=0.5):
+def pulse(frame: l3dcube.CubeFrame, fp: FramePublisher, speed: float = 0.5) -> None:
   # Terrible way of going about this, but it works for now/demo purposes
   while True:
     frame.adjust_color_mask(1)

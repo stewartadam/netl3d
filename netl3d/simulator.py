@@ -1,13 +1,15 @@
-# -*- coding: utf-8 -*-
-from enum import Enum
+import logging
 import spectra
-import time
 import threading
+import time
 import uuid
+from enum import Enum
+from typing import Dict, List
 
-from netl3d.hardware import l3dcube
+import netl3d
 
-class merge_strategy(Enum):
+
+class MergeStrategy(Enum):
   OVERLAY = 1
   DIFFERNECE = 2
   ADD = 3
@@ -16,78 +18,61 @@ class merge_strategy(Enum):
   AVERAGE = 6
 
 class Simulator(threading.Thread):
-  queued_animations = {}
-  animations = {}
-  signals = {}
-
-  def __init__(self, stop_signal, controller, ticks_per_second=30):
+  def __init__(self, stop_signal: threading.Event, controller: netl3d.base.Controller, ticks_per_second: int = 30) -> None:
     threading.Thread.__init__(self)
-    self.signals['stop'] = stop_signal
+    self.logger = logging.getLogger(__name__)
+    self.mutate_lock = threading.Lock()
+    self.stop_signal = stop_signal
     self.controller = controller
-    self.led_state = l3dcube.CubeFrame()
     self.ticks_per_second = ticks_per_second
-    self.tick_length = 1.0/ticks_per_second
     self.tick_num = 0
+    # FIXME: publishers should just be another pipeline
+    # to do that we'll need to fix pipeline to merge frames, not a sequential apply()
+    self.publishers: List[Dict[str, object]] = [] # FIXME typing
 
-  def run(self):
-    while not self.signals['stop'].is_set():
-      self.led_state.clear()
-      self.merge()
-      self.controller.sync(self.led_state)
+  def add_publisher(self, fp: netl3d.base.FramePublisher, priority: int = 0, merge_strategy: MergeStrategy = MergeStrategy.OVERLAY) -> str:
+    with self.mutate_lock:
+      self.logger.debug(f"adding publisher {fp} to simulation")
+      id = str(uuid.uuid4())
+      self.publishers.append({'id': id, 'priority': priority, 'fp': fp, 'merge_strategy': merge_strategy})
+      self.publishers = sorted(self.publishers, key=lambda item: item['priority'], reverse=True)
+      return id
 
-      time.sleep(self.tick_length)
-      self.tick_num = (self.tick_num + 1) % self.ticks_per_second
+  def remove_publisher(self, id: str) -> None:
+    with self.mutate_lock:
+      for item in self.publishers:
+        if item['id'] == id:
+          break
+      self.logger.debug(f"removing publisher {item['fg']} from simulation")
+      self.publishers.remove(item)
 
-  def add_animation(self, runable, strategy=merge_strategy.OVERLAY, priority=0):
-    frame = l3dcube.CubeFrame()
-    thread = threading.Thread(target=runable, args=(frame,))
-    thread.daemon = True
-    thread.start()
+  def run(self) -> None:
+    self.logger.debug("starting simulation")
+    while not self.stop_signal.is_set():
+      frame = self.merge()
+      self.controller.sync(frame)
+      time.sleep(1.0 / self.ticks_per_second)
+    self.logger.debug("stopping simulation")
 
-    id = str(uuid.uuid4())
-    self.queued_animations[id] = {
-      'runable': runable,
-      'thread': thread,
-      'frame': frame,
-      'priority': priority,
-      'merge_strategy': strategy,
-    }
-    return id
-
-  def delete_animation(self, id):
-    self.animations[id]['removal'] = True
-
-  def sort_animations(self):
-    self.animations = {k: v for k, v in sorted(self.animations.items(), key=lambda animation: animation[1]['priority'], reverse=True)}
-
-  def merge(self):
-    # Verify if we were asked to add new animations
-    if self.queued_animations:
-      for id, animation in self.queued_animations.items():
-        self.animations[id] = animation
-      self.sort_animations()
-
-    # Render each animation
-    for id in tuple(self.animations):
-      animation = self.animations[id]
-
-      # Verify if we were asked to remove an animation
-      if 'removal' in animation:
-        self.animations.pop(id)
-        continue
-
-      state = animation['frame']._state_linear
-
-      zero = self.led_state.get_color(0, 0, 0)
-      if animation['merge_strategy'] == merge_strategy.OVERLAY:
-        for i in range(len(state)):
-          if self.led_state._state_linear[i].clamped_rgb == zero.clamped_rgb:
-            self.led_state._state_linear[i] = state[i]
-      elif animation['merge_strategy'] == merge_strategy.EXCLUSIVE:
-        self.led_state._state_linear = state
+  def merge(self) -> netl3d.hardware.l3dcube.CubeFrame:
+    self.logger.debug("starting frame merge")
+    master_frame = netl3d.hardware.l3dcube.CubeFrame()
+    for publisher in self.publishers:
+      self.logger.debug(f"-> merging frame from publisher {publisher['fp']} with {publisher['merge_strategy']}")
+      frame = publisher['fp'].get_published_frame() # type: ignore
+      zero = master_frame.get_color(0, 0, 0)
+      if publisher['merge_strategy'] == MergeStrategy.OVERLAY:
+        for i in range(len(frame._state_linear)):
+          if master_frame._state_linear[i].clamped_rgb == zero.clamped_rgb:
+            master_frame._state_linear[i] = frame._state_linear[i]
+      elif publisher['merge_strategy'] == MergeStrategy.EXCLUSIVE:
+        master_frame._state_linear = frame._state_linear
         break
-      elif animation['merge_strategy'] == merge_strategy.AVERAGE:
-        for i in state:
-          c1 = spectra.rgb(*(self.led_state[i]/255)).to("hsv")
-          c2 = spectra.rgb(*(state[i]/255)).to("hsv")
-          self.led_state._state_linear[i] = c1.blend(c2).clamped_rgb*255
+      elif publisher['merge_strategy'] == MergeStrategy.AVERAGE:
+        for i in frame._state_linear:
+          c1 = master_frame._state_linear[i].to("hsv")
+          c2 = frame._state_linear[i].to("hsv")
+          master_frame._state_linear[i] = c1.blend(c2).clamped_rgb*255
+      else:
+        raise ValueError(f"Invalid merge strategy: {publisher['merge_strategy']}")
+    return master_frame

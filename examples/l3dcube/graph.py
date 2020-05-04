@@ -53,12 +53,11 @@ def generate_frame_sheet():
 
 if __name__ == "__main__":
   config = netl3d.parse_config()
-  debug = config['debug']
+  netl3d.configure_logging(config)
   ip = config['hardware']['l3dcube']['ip']
   port = config['hardware']['l3dcube']['port']
 
-  controller = l3dcube.GraphController(ip, port)
-  controller.set_debug(debug)
+  controller = l3dcube.L3DGraphController(ip, port)
   controller.handshake()
 
   graphs = itertools.cycle([

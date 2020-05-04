@@ -62,7 +62,7 @@ void setup() {
 
   udp_setup();
 
-  strip.setBrightness(30);
+  strip.setBrightness(10);
   strip.begin();
   strip.show();
   colorWipe(strip.Color(0xFF, 0xE6, 0x9B));
