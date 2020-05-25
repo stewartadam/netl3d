@@ -13,7 +13,7 @@ class Frame(abc.ABC, Generic[PositionType]):
   Interface and common functions for hardware-specific LED frames. Maintains
   an in-memory LED state that can be synchronized to a device.
   """
-  _brightness_mask = 0.8
+  _brightness_mask = 1
   _color_mask = 7
 
   def __init__(self) -> None:
