@@ -23,9 +23,9 @@ while True:
   print('Setting LED color to %s' % ('rgb'[mode]))
 
   frame = l3dcube.CubeFrame()
-  frame.set_brightness_mask(.3)
+  frame.set_brightness_mask(.5)
   frame.fill(spectra.rgb((mode == 0), (mode == 1), (mode == 2)))
   controller.sync(frame)
 
   mode = (mode + 1) % 3
-  time.sleep(0.01)
+  time.sleep(0.05) # ~15fps per measurement

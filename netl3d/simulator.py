@@ -25,8 +25,7 @@ class Simulator(threading.Thread):
     self.stop_signal = stop_signal
     self.controller = controller
     self.ticks_per_second = ticks_per_second
-    self.tick_num = 0
-    # FIXME: publishers should just be another pipeline
+    # FIXME: replace list of publishers with just be another pipeline instead
     # to do that we'll need to fix pipeline to merge frames, not a sequential apply()
     self.publishers: List[Dict[str, object]] = [] # FIXME typing
 
