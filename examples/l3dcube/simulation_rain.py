@@ -26,7 +26,7 @@ if __name__ == '__main__':
     rain.daemon = True
 
     pipeline = netl3d.base.Pipeline(fp)
-    fade = netl3d.transforms.FadeTransform(3000, start_opacity=0.7, end_opacity=0.2)
+    fade = netl3d.transforms.FrameFadeTransform(1000, start_opacity=0.7, end_opacity=0.2)
     id = pipeline.add(fade)
     threading.Timer(6.0, pipeline.remove, args=(id,)).start()
 
@@ -35,7 +35,7 @@ if __name__ == '__main__':
 
   sim.start()
 
-  for i in range(6):
+  for i in range(1):
     setup_rain()
 
   try:
