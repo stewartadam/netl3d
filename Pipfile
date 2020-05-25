@@ -12,6 +12,8 @@ numpy = "*"
 pyaudio = "*"
 
 [dev-packages]
+flake8 = "*"
+mypy = "*"
 
 [requires]
 python_version = "3.7"
